@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Share2, CheckCircle } from 'lucide-react';
 import CustomRecaptcha from "@/components/MyRecaptcha";
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { db } from '@/app/api/firebase/firebase';
 
 import Image from 'next/image';
 // Types
 interface PollQuestion {
   id: string;
   question: string;
-  type: 'multiple_choice' | 'text_input';
+  type: string;
   options?: string[];
 }
 
@@ -17,118 +19,13 @@ interface PollResponse {
   answer: string;
 }
 
-// Sample poll data
-const pollData = {
-  title: "استطلاع الرأي العام",
-  description: "شاركنا رأيك في هذا الاستطلاع القصير",
-  questions: [
-    {
-      id: "1",
-      question: "واش كتكمي؟",
-      type: "multiple_choice" as const,
-      options: ["اه", "مرة مرة"]
-    },
-    {
-      id: "2",
-      question: "عندك بلية اخرى من غير الكارو؟",
-      type: "multiple_choice" as const,
-      options: ["اه", "لا"]
-    },
-    {
-      id: "3",
-      question: "شحال من كارو فالنهار؟",
-      type: "multiple_choice" as const,
-      options: [ "كل مرة واشنو ", "اكثر من 5 فالنهاره", "أقل من 5 فالنهار"]
-    },    
-    {
-      id: "4",
-      question: "باش كايعجبك دوز؟",
-      type: "multiple_choice" as const,
-      options: [ "كوكة", "قهوة", "أتاي"]
-    },   
-    {
-      id: "5",
-      question: " اشمن نوع ديال السجارة كتستعمل؟",
-      type: "multiple_choice" as const,
-      options: [ "السجارة الإلكترونية", "السجارة العادية"]
-    },
-    {
-      id: "6",
-      question: "شحال كان فعمرك ملي تبليتي؟",
-      type: "multiple_choice" as const,
-      options: [ "بعد 25 عام", "بين 18 عام و 25 عام", "أقل من 18 عام"]
-    },
-    {
-      id: "7",
-      question: "شكون لي بلاك؟",
-      type: "multiple_choice" as const,
-      options: [ "ماشي سوقك", "صحابي ", "بليت راسي"]
-    },
-    {
-      id: "8",
-      question: "اشنو لي كايخليك تكمي؟",
-      type: "multiple_choice" as const,
-      options: [ "غير شاد ستون", "الستريس", "الظروف"]
-    },
-   {
-      id: "9",
-      question: "واش كتفكر تبعد من هاذ البلية؟",
-      type: "multiple_choice" as const,
-      options: [ "مبغيتش نبعد", "مزال ممستعدش", "ديما كانفكر"]
-    },
-    {
-      id: "10",
-      question: "شحال كاتخسر دالفلوس كل نهار فهاذ البلية؟",
-      type: "multiple_choice" as const,
-      options: [ "أكثر من 150 درهم", "بين 50 درهم و 150 درهم", "أقل من 50 درهم"]
-    },
-    {
-      id: "11",
-      question: "واش الى بدلتي المحيط تقدر تبعد من البلية؟",
-      type: "multiple_choice" as const,
-      options: [ "لا", "أه"]
-    },
-    {
-      id: "12",
-      question: "واش كاتشوف راسك تقدر تعافى من هاد البلية؟",
-      type: "multiple_choice" as const,
-      options: [ "فات الفوت", "كاين أمل"]
-    },    
-    {
-      id: "13",
-      question: "واش كاتسهر؟",
-      type: "multiple_choice" as const,
-      options: [ "كنعس معا الدجاج", "بزااف", "مرة مرة"]
-    },
-    {
-      id: "14",
-      question: "واش عاجباك حالتك ونتا مبلي؟",
-      type: "multiple_choice" as const,
-      options: [ "لا", "اه"]
-    },
-   {
-      id: "15",
-      question: "واش كاتريني؟",
-      type: "multiple_choice" as const,
-      options: [ "مرة مرة", "لا", "اه"]
-    },
-    {
-      id: "16",
-      question: "اشنو تبغي تنصح الناس لي باقي متبلاوش؟",
-      type: "text_input" as const
-    },
-    {
-      id: "17",
-      question: "واش كاينا شي حاجة اخرى مأثرة عليك؟",
-      type: "text_input" as const
-    },
-  ]
-};
+// load Sample poll data from the questions.json file 
+import pollData from './questions.json'; 
 
 
 // Smoking Survey Welcome Page
 const SmokingSurveyPage = ({ onNext }: { onNext: () => void }) => (
-  <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+  <div className="min-h-screen bg-[#1E2939] text-white flex items-center justify-center p-4">
     <div className=" w-[90%]">
       <div className="relative w-full justify-center flex items-center">
           <Image 
@@ -165,7 +62,8 @@ const SmokingSurveyPage = ({ onNext }: { onNext: () => void }) => (
           </p>
           <button
             onClick={onNext}
-            className="w-[80%] md:w-[400px] bg-red-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-red-700 transition-colors text-base md:text-lg text-center"
+            // the hover effect is red it should be cyan
+            className="w-[80%] md:w-[400px] bg-[#26CDBC] text-white font-bold py-4 px-10 rounded-lg hover:bg-green-600 transition-colors text-base md:text-lg text-center"
           >
             نبداو الاستطلاع
           </button>
@@ -199,7 +97,7 @@ const InstructionsPage = ({ onNext }: { onNext: () => void }) => {
   const [isRobotChecked, setIsRobotChecked] = useState(false);
 
   return (
-    <div className="min-h-screen  bg-black text-white flex items-center justify-center p-4">
+    <div className="min-h-screen  bg-[#1E2939] text-white flex items-center justify-center p-4">
       
       <div className=" w-full flex flex-col justify-center items-center">
                 
@@ -253,7 +151,7 @@ const InstructionsPage = ({ onNext }: { onNext: () => void }) => {
           <button
             onClick={onNext}
             disabled={!isRobotChecked}
-            className="w-[60%] md:w-[400px] justify-center items-center flex bg-red-600 text-white font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xl md:text-3xl"
+            className="w-[60%] md:w-[400px] justify-center items-center flex bg-[#26CDBC] text-white font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xl md:text-3xl"
           >
             نبدا
           </button>
@@ -282,7 +180,7 @@ const QuestionPage = ({
 }) => (
   
   
-  <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+  <div className="min-h-screen bg-[#1E2939] text-white flex flex-col items-center justify-center p-4">
           <div className="relative w-full justify-center flex items-center">
             <Image 
                 src="/images/iqlaa logo.svg" 
@@ -307,7 +205,7 @@ const QuestionPage = ({
               className={`w-full p-4 md:p-5 rounded-lg border-2 text-right transition-colors text-sm md:text-base ${
                 answer === option
                   ? ' bg-primary bg-opacity-20 border-cyan-400'
-                  : 'border-gray-600 focus:border-red-500  '
+                  : 'border-gray-600 focus:border-cyan-500  '
               }`}
             >
               {option}
@@ -329,7 +227,7 @@ const QuestionPage = ({
         <button
           onClick={onPrevious}
           disabled={currentIndex === 0}
-          className="flex bg-red-600  pr-7 items-center gap-2 px-6 py-2 md:py-3 bg-primary text-dark rounded-lg font-bold hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+          className="flex bg-[#374355]  pr-7 items-center gap-2 px-6 py-2 md:py-3 bg-primary text-dark rounded-lg font-bold hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
         >
           <ChevronLeft size={20} />
           السابق
@@ -338,7 +236,7 @@ const QuestionPage = ({
         <button
           onClick={onNext}
           disabled={!answer}
-          className="flex bg-red-600  pr-7 items-center gap-2 px-6 py-2 md:py-3 bg-primary text-dark rounded-lg font-bold hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+          className="flex bg-[#374355]  pr-7 items-center gap-2 px-6 py-2 md:py-3 bg-primary text-dark rounded-lg font-bold hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
         >
           {currentIndex === totalQuestions - 1 ? 'إنهاء' : 'التالي'}
           <ChevronRight size={20} />
@@ -353,70 +251,95 @@ const QuestionPage = ({
 );
 
 // Phone Number Input comp
-const PhoneInputPage = ({ onNext, phoneNumber, setPhoneNumber }: { 
-  onNext: () => void; 
-  phoneNumber: string; 
-  setPhoneNumber: (phone: string) => void; 
+const PhoneInputPage = ({
+  onNext,
+  phoneNumber,
+  setPhoneNumber,
+}: {
+  onNext: () => void;
+  phoneNumber: string;
+  setPhoneNumber: (phone: string) => void;
 }) => {
   const [showSkipMessage, setShowSkipMessage] = useState(false);
 
+const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const input = e.target.value;
+
+  const prefix = "+212 ";
+  const numbersOnly = input.replace(/\D/g, ""); // remove non-digits
+  let localPart = numbersOnly.startsWith("212") ? numbersOnly.slice(3) : numbersOnly;
+
+  if (localPart.startsWith("0")) localPart = localPart.slice(1);
+
+  localPart = localPart.slice(0, 9);
+
+  setPhoneNumber(prefix + localPart);
+};
+
+const isValidMoroccan = /^\+212\s[5-7][0-9]{8}$/.test(phoneNumber);
+
   return (
-    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center p-4">
-      <div className="w-full flex  flex-col justify-center items-center">
+    <div className="min-h-screen w-full bg-[#1E2939] text-white flex items-center justify-center p-4">
+      <div className="w-full flex flex-col justify-center items-center">
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center">
             <div className="relative">
-                <Image 
-                src="/images/iqlaa logo.svg" 
-                alt="Example Image" 
-                width={300} 
+              <Image
+                src="/images/iqlaa logo.svg"
+                alt="Example Image"
+                width={300}
                 height={200}
-                />
+              />
             </div>
           </div>
         </div>
 
-        <div className="text-center  w-full mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-6xl  font-bold mb-6 leading-relaxed">
-            آخر حاجة، بغيتي تجرب أحسن<br />
+        <div className="text-center w-full mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-6xl font-bold mb-6 leading-relaxed">
+            آخر حاجة، بغيتي تجرب أحسن
+            <br />
             طريقة للتعافي ف 90 يوم؟
           </h1>
-          <p className="text-gray-300 mb-4 text-[19px] sm:text-2xl lg:text-2xl 2xl:text-2xl  leading-relaxed" >
+          <p className="text-gray-300 mb-4 text-[19px] sm:text-2xl lg:text-2xl 2xl:text-2xl leading-relaxed">
             خدامين على استراتيجية جديدة باش نعاونو الناس يقلعو على التدخين.
           </p>
-          <p className="text-gray-300 mb-8 text-[19px] sm:text-2xl lg:text-2xl 2xl:text-2xl  leading-relaxed">
+          <p className="text-gray-300 mb-8 text-[19px] sm:text-2xl lg:text-2xl 2xl:text-2xl leading-relaxed">
             إلى بغيتي تكون من الولين لي يجربوها، دخل نمرة تليفونك وسجل ف الويتليست.
           </p>
         </div>
 
-        <div className=" max-w-md text-center w-full mb-8">
+        <div className="max-w-md text-center w-full mb-8">
           <label className="block text-right mb-4 text-gray-300">
             دخل رقم تليفونك
           </label>
-          <input
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="+212 6xx-xxxxxx"
-            className="w-full p-4 rounded-lg bg-slate-800 border-2 border-slate-600 focus:border-cyan-400 focus:outline-none text-center text-lg"
-            dir="ltr"
-          />
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={handlePhoneChange}
+              placeholder="+212 6xx-xxxxxx"
+              className="w-full p-4 rounded-lg bg-slate-800 border-2 border-slate-600 focus:border-cyan-400 focus:outline-none text-center text-lg"
+              dir="ltr"
+            />
+            {!isValidMoroccan && phoneNumber.length > 4 && (
+            <p className="text-red-400 mt-2 text-sm">
+              المرجو إدخال رقم مغربي صحيح
+            </p>
+          )}
         </div>
 
-        <div className=" max-w-md space-y-4">
+        <div className="max-w-md space-y-4">
           <button
             onClick={onNext}
-            disabled={!phoneNumber.trim()}
+            disabled={!isValidMoroccan}
             className="w-full bg-cyan-400 text-slate-900 font-bold py-4 px-6 rounded-lg hover:bg-cyan-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
           >
             سجّلني
           </button>
-          
           <button
             onClick={() => setShowSkipMessage(true)}
             className="w-full text-cyan-400 font-medium py-2 hover:text-cyan-300 transition-colors underline"
           >
-            ماشي ديالك [تجاوز]
+            ماشي دبا [تجاوز]
           </button>
         </div>
 
@@ -446,7 +369,7 @@ const PhoneInputPage = ({ onNext, phoneNumber, setPhoneNumber }: {
 
 // Thank You Page Comp
 const ThankYouPage = ({ onShare }: { onShare: () => void }) => (
-  <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+  <div className="min-h-screen bg-[#1E2939] text-white flex items-center justify-center p-4">
     <div className=" w-full flex flex-col items-center text-center">
                <div className="relative pb-8">
                 <Image 
@@ -468,7 +391,7 @@ const ThankYouPage = ({ onShare }: { onShare: () => void }) => (
       </p>
       <button
         onClick={onShare}
-        className="w-[70%] md:w-[400px] bg-red-600 text-dark font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 text-base md:text-lg"
+        className="w-[70%] md:w-[400px] bg-[#26CDBC] text-dark font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 text-base md:text-lg"
       >
         <Share2 size={20} />
         بارطجي
@@ -509,7 +432,6 @@ export default function PollApp() {
   };
 
   const handlePhoneNext = () => {
-    // Save to Firebase here with phone number
     saveResponsesToFirebase();
     setCurrentPage('thank-you');
   };
@@ -536,13 +458,25 @@ export default function PollApp() {
 
   
   const saveResponsesToFirebase = async () => {
-    // Firebase save logic will go here
+
+  try {
     const dataToSave = {
       responses: responses,
       phoneNumber: phoneNumber || null,
       timestamp: new Date().toISOString()
     };
-    console.log('data to save it in firebase hhhhh :', dataToSave);
+    
+    console.log('Data to save:', dataToSave);
+    
+    const docRef = await addDoc(collection(db, "users"), dataToSave);
+    
+    console.log("User survey saved with ID:", docRef.id);
+    
+  } catch (error) {
+    console.error("Error saving user data:", error);
+  }
+
+
   };
 
   const getCurrentAnswer = () => {
