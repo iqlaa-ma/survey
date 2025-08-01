@@ -114,7 +114,7 @@ const Responses: React.FC = () => {
                 const count = stats[q.id]?.[option] ?? 0;
                 const total: any = Object.values(stats[q.id] || {}).reduce((a, b) => Number(a) + Number(b), 0);
                 const percent = total > 0 ? (count / total) * 100 : 0;
-                let bg_color = ["bg-orange-900","bg-blue-900", "bg-green-900"] 
+                let bg_color = ["bg-amber-800","bg-indigo-800", "bg-lime-800", "bg-purple-800"] 
 
                 return (
                   <li key={option} className=''>
