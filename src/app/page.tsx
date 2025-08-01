@@ -1,8 +1,8 @@
 "use client"
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Share2, CheckCircle } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Share2 } from 'lucide-react';
 import CustomRecaptcha from "@/components/MyRecaptcha";
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/app/api/firebase/firebase';
 
 import Image from 'next/image';

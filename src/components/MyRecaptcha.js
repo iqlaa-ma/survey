@@ -82,7 +82,7 @@ export default function CustomRecaptcha({ onVerificationChange }) {
               <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             )}
           </div>
-          <span className="text-gray-700 text-sm">I'm not a robot</span>
+          <span className="text-gray-700 text-sm">I&apos;m not a robot</span>
           <img 
             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iNCIgZmlsbD0iIzQyODVGNCIvPgo8cGF0aCBkPSJNMTYuNSAyMC41TDEyIDI1TDguNSAyMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMzEuNSAxNC41TDI3IDEwTDIzLjUgMTMuNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+" 
             alt="reCAPTCHA" 
