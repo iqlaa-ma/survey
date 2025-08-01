@@ -4,6 +4,7 @@ import { ChevronRight, ChevronLeft, Share2 } from 'lucide-react';
 import CustomRecaptcha from "@/components/MyRecaptcha";
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/app/api/firebase/firebase';
+import pollData from './questions.json'; 
 
 import Image from 'next/image';
 // Types
@@ -20,7 +21,6 @@ interface PollResponse {
 }
 
 // load Sample poll data from the questions.json file 
-import pollData from './questions.json'; 
 
 
 // Smoking Survey Welcome Page
