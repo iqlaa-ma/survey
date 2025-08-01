@@ -106,7 +106,7 @@ const Responses: React.FC = () => {
       <ul className='w-[50%] flex flex-col gap-8 mb-50' style={{ minWidth: 300 }}>
         {_questions.filter(q => q.type === 'multiple_choice').map(q => (
           <li key={q.id} className='bg-gray-700 rounded-lg' style={{}} >
-            <div className='font-bold mb-4 bg-gray-600 p-3 pr-6 rounded-t-lg' style={{color: "#e7e7e7ff", fontSize: "20px"}}>{q.question}</div>
+            <div className='font-bold mb-4 bg-gray-600 p-3 pr-5 rounded-t-lg' style={{color: "#e7e7e7ff", fontSize: "20px"}}>{q.question}</div>
             <ul className=' flex flex-col gap-2 p-3'>
               {q.options && [...q.options]
                 .sort((a, b) => (stats[q.id]?.[b] ?? 0) - (stats[q.id]?.[a] ?? 0))
