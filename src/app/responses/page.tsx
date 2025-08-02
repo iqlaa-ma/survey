@@ -17,7 +17,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// console.log("Firebase db: ", db);
+
 type ResponseData = {
     id: string;
     [key: string]: any;
@@ -106,7 +106,8 @@ const Responses: React.FC = () => {
       <ul className='w-[50%] flex flex-col gap-8 mb-50' style={{ minWidth: 300 }}>
         {_questions.filter(q => q.type === 'multiple_choice').map(q => (
           <li key={q.id} className='bg-gray-700 rounded-lg' style={{}} >
-            <div className='font-bold mb-4 bg-gray-600 p-3 pr-5 rounded-t-lg' style={{color: "#e7e7e7ff", fontSize: "20px"}}>{q.question}</div>
+            <div className='font-bold mb-4 bg-gray-600 p-3 pr-5 rounded-t-lg border-b-1 border-white'
+              style={{color: "#e7e7e7ff", fontSize: "20px"}}>{q.question}</div>
             <ul className=' flex flex-col gap-2 p-3'>
               {q.options && [...q.options]
                 .sort((a, b) => (stats[q.id]?.[b] ?? 0) - (stats[q.id]?.[a] ?? 0))
@@ -114,22 +115,23 @@ const Responses: React.FC = () => {
                 const count = stats[q.id]?.[option] ?? 0;
                 const total: any = Object.values(stats[q.id] || {}).reduce((a, b) => Number(a) + Number(b), 0);
                 const percent = total > 0 ? (count / total) * 100 : 0;
-                let bg_color = ["bg-amber-800","bg-indigo-800", "bg-lime-800", "bg-purple-800"] 
+                let bg_color = ["bg-yellow-600","bg-teal-600", "bg-lime-600", "bg-purple-600"] 
 
                 return (
                   <li key={option} className=''>
-                    <div className={`relative h-full w-full rounded-lg ${bg_color[index]}`} style={{zIndex: '0', height: '2.75rem'}} >
-                      <div className='absolute top-0 h-full rounded-lg bg-green-700'
-                        style={{width: `${percent}%`, zIndex: 1, transition: 'width 0.5s', background: "rgb(157 155 155 / 49%)"}} />
+                    <div className={`relative w-full rounded-lg`} style={{zIndex: '0', height: '2.75rem', background: "rgb(116 123 123)"}} >
+                      <div className={`absolute top-0 h-full rounded-lg ${bg_color[index]} `}
+                        style={{width: `${percent}%`, zIndex: 1, transition: 'width 0.5s',}} />
 
-                      <div className='relative z-10 p-4 flex items-center h-full w-full justify-between' style={{color: "white"}}>
-                        <span className='font-bold'>{option}</span>
-                        <span className="text-gray-50 font-medium">{percent.toFixed(0)}% - {count}</span>
+                      <div className='relative z-10 p-4 flex items-center h-full w-full justify-between'>
+                        <span className='font-bold text-gray-100'>{option}</span>
+                        <span className="text-white font-medium">{percent.toFixed(0)}% - {count}</span>
                       </div>
                     </div>
                   </li>
                 );
               })}
+
             </ul>
           </li>
         ))}
