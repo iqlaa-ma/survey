@@ -124,8 +124,8 @@ const Responses: React.FC = () => {
                         style={{width: `${percent}%`, zIndex: 1, transition: 'width 0.5s',}} />
 
                       <div className='relative z-10 p-4 flex items-center h-full w-full justify-between'>
-                        <span className='font-bold text-gray-100'>{option}</span>
-                        <span className="text-white font-medium">{percent.toFixed(0)}% - {count}</span>
+                        <span className='font-bold text-lg text-gray-200'>{option}</span>
+                        <span className="text-white font-semibold">{percent.toFixed(0)}% - {count}</span>
                       </div>
                     </div>
                   </li>
