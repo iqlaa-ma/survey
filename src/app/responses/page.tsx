@@ -107,7 +107,7 @@ const Responses: React.FC = () => {
         {_questions.filter(q => q.type === 'multiple_choice').map(q => (
           <li key={q.id} className='bg-gray-700 rounded-lg' style={{}} >
             <div className='font-bold mb-4 bg-gray-600 p-3 pr-5 rounded-t-lg border-b-1 border-white'
-              style={{color: "#e7e7e7ff", fontSize: "20px"}}>{q.question}</div>
+              style={{color: "#e7e7e7ff", fontSize: "20px", background: "rgb(81 70 64)"}}>{q.question}</div>
             <ul className=' flex flex-col gap-2 p-3'>
               {q.options && [...q.options]
                 .sort((a, b) => (stats[q.id]?.[b] ?? 0) - (stats[q.id]?.[a] ?? 0))
@@ -115,7 +115,7 @@ const Responses: React.FC = () => {
                 const count = stats[q.id]?.[option] ?? 0;
                 const total: any = Object.values(stats[q.id] || {}).reduce((a, b) => Number(a) + Number(b), 0);
                 const percent = total > 0 ? (count / total) * 100 : 0;
-                let bg_color = ["bg-yellow-600","bg-teal-600", "bg-lime-600", "bg-purple-600"] 
+                let bg_color = ["bg-blue-800","bg-teal-700", "bg-lime-700", "bg-purple-600"] 
 
                 return (
                   <li key={option} className=''>
