@@ -1,10 +1,35 @@
-
 "use client";
-import React, { useEffect, useState } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from "react";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import questionsJSON from "../questions.json";
 
-// TODO: Replace with your Firebase config
+// ---- Types ----
+type PollQuestion = {
+  id: string;
+  question: string;
+  type: string;
+  options?: string[];
+};
+
+type PollResponseEntry = {
+  questionId: string;
+  answer: string;
+};
+
+type UserResponse = {
+  id: string;
+  responses: PollResponseEntry[];
+[key: string]: string | number | boolean | null | PollResponseEntry[] | object; 
+};
+
+type Stats = {
+  [questionId: string]: {
+    [option: string]: number;
+  };
+};
+
+// ---- Firebase config ----
 const firebaseConfig = {
   apiKey: "AIzaSyDuBbgwcJR0wWJMq7CFV-VgZMqNtFzDPko",
   authDomain: "iqlaa-9b951.firebaseapp.com",
@@ -12,58 +37,38 @@ const firebaseConfig = {
   storageBucket: "iqlaa-9b951.firebasestorage.app",
   messagingSenderId: "728888284570",
   appId: "1:728888284570:web:af08032d700e028a029623",
-  measurementId: "G-YVR4ERB4BJ"
+  measurementId: "G-YVR4ERB4BJ",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-type ResponseData = {
-    id: string;
-    [key: string]: any;
-};
-
-
-// load questions from the questions.json file
-import questions from '../questions.json';
-
-function getQuestionText(questionId: string, questions: { id: string; question: string }[]) {
-  const q = questions.find(q => q.id === questionId);
-  return q ? q.question : "Unknown question";
-}
-
-
-
-type Question = {
-  id: string;
-  question: string;
-  type: string;
-  options?: string[];
-};
-const _questions: Question[] = questions.questions || [];
-
-
-
-
-
+// ---- Data load ----
+const _questions: PollQuestion[] = questionsJSON?.questions ?? [];
 
 const Responses: React.FC = () => {
-  const [responses, setResponses] = useState<ResponseData[]>([]);
+  const [responses, setResponses] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>({});
+  const [stats, setStats] = useState<Stats>({});
 
   useEffect(() => {
     const fetchResponses = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'users'));
-        const data = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const data: UserResponse[] = querySnapshot.docs.map(doc => {
+          // If no responses, ensure it's an array.
+          const resp = doc.data();
+          return {
+            id: doc.id,
+            responses: Array.isArray(resp.responses)
+              ? resp.responses
+              : [],
+            ...resp,
+          };
+        });
         setResponses(data);
-        console.log("Fetched responses: ", data);
       } catch (error) {
-        console.error('Error fetching responses:', error);
+        console.error("Error fetching responses:", error);
       } finally {
         setLoading(false);
       }
@@ -72,10 +77,9 @@ const Responses: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Calculate stats after responses are loaded
-    const newStats: any = {};
+    const newStats: Stats = {};
     _questions.forEach(q => {
-      if (q.type === "multiple_choice" && q.options) {
+      if (q.type === "multiple_choice" && Array.isArray(q.options)) {
         newStats[q.id] = {};
         q.options.forEach(option => {
           newStats[q.id][option] = 0;
@@ -83,58 +87,92 @@ const Responses: React.FC = () => {
       }
     });
     responses.forEach(userResponse => {
-      userResponse.responses?.forEach((answerObj: any) => {
+      userResponse.responses.forEach(answerObj => {
         const { questionId, answer } = answerObj;
-        if (newStats[questionId] && newStats[questionId][answer] !== undefined) {
+        if (
+          newStats[questionId] &&
+          Object.prototype.hasOwnProperty.call(newStats[questionId], answer)
+        ) {
           newStats[questionId][answer]++;
         }
       });
     });
     setStats(newStats);
-    if (Object.keys(newStats).length > 0) {
-      console.log("Stats: ", newStats);
-    }
   }, [responses]);
 
   if (loading) return <div>Loading...</div>;
-  // clculate totale user responses
-  let totalResponses = "إجمالي عدد الإجابات: " + responses.length;
+
+  const totalResponses = `إجمالي عدد الإجابات: ${responses.length}`;
 
   return (
-    <div className='bg-gray-800 flex flex-col items-center justify-center' dir="rtl">
-      <h2 className='mt-10 text-4xl font-bold text-center mb-10' style={{color: "cyan"}}>{totalResponses}</h2>
-      <ul className='w-[50%] flex flex-col gap-8 mb-50' style={{ minWidth: 300 }}>
-        {_questions.filter(q => q.type === 'multiple_choice').map(q => (
-          <li key={q.id} className='bg-gray-700 rounded-lg' style={{}} >
-            <div className='font-bold mb-4 bg-gray-600 p-3 pr-5 rounded-t-lg border-b-1 border-white'
-              style={{color: "#e7e7e7ff", fontSize: "20px", background: "rgb(81 70 64)"}}>{q.question}</div>
-            <ul className=' flex flex-col gap-2 p-3'>
-              {q.options && [...q.options]
-                .sort((a, b) => (stats[q.id]?.[b] ?? 0) - (stats[q.id]?.[a] ?? 0))
-                .map((option, index) => {
-                const count = stats[q.id]?.[option] ?? 0;
-                const total: any = Object.values(stats[q.id] || {}).reduce((a, b) => Number(a) + Number(b), 0);
-                const percent = total > 0 ? (count / total) * 100 : 0;
-                let bg_color = ["bg-blue-800","bg-teal-700", "bg-lime-700", "bg-purple-600"] 
+    <div className="bg-gray-800 flex flex-col items-center justify-center" dir="rtl">
+      <h2
+        className="mt-10 text-4xl font-bold text-center mb-10"
+        style={{ color: "cyan" }}
+      >
+        {totalResponses}
+      </h2>
+      <ul className="w-[50%] flex flex-col gap-8 mb-50" style={{ minWidth: 300 }}>
+        {_questions
+          .filter(q => q.type === "multiple_choice")
+          .map(q => (
+            <li key={q.id} className="bg-gray-700 rounded-lg">
+              <div
+                className="font-bold mb-4 p-3 pr-5 rounded-t-lg border-b-1 border-white"
+                style={{ color: "#e7e7e7ff", fontSize: "20px", background: "rgb(81 70 64)" }}
+              >
+                {q.question}
+              </div>
+              <ul className="flex flex-col gap-2 p-3">
+                {q.options &&
+                  [...q.options]
+                    .sort(
+                      (a, b) =>
+                        (stats[q.id]?.[b] ?? 0) - (stats[q.id]?.[a] ?? 0)
+                    )
+                    .map((option, idx) => {
+                      const count = stats[q.id]?.[option] ?? 0;
+                      const total = Object.values(stats[q.id] ?? {}).reduce(
+                        (a, b) => a + b,
+                        0
+                      );
+                      const percent = total > 0 ? (count / total) * 100 : 0;
+                      let bg_color = ["bg-blue-800","bg-teal-700", "bg-lime-700", "bg-purple-600"]; 
 
-                return (
-                  <li key={option} className=''>
-                    <div className={`relative w-full rounded-lg`} style={{zIndex: '0', height: '2.75rem', background: "rgb(116 123 123)"}} >
-                      <div className={`absolute top-0 h-full rounded-lg ${bg_color[index]} `}
-                        style={{width: `${percent}%`, zIndex: 1, transition: 'width 0.5s',}} />
-
-                      <div className='relative z-10 p-4 flex items-center h-full w-full justify-between'>
-                        <span className='font-bold text-lg text-gray-200'>{option}</span>
-                        <span className="text-white font-semibold">{percent.toFixed(0)}% - {count}</span>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-
-            </ul>
-          </li>
-        ))}
+                      return (
+                        <li key={option} className="mb-1">
+                          <div
+                            className="relative h-full w-full rounded-lg"
+                            style={{
+                              zIndex: "0",
+                              height: "2.75rem",
+                              background: "rgb(116 123 123)",
+                            }}
+                          >
+                            <div
+                              className={`absolute top-0 h-full rounded-lg ${bg_color[idx]}`}
+                              style={{
+                                width: `${percent}%`,
+                                zIndex: 1,
+                                transition: "width 0.5s",
+                              }}
+                            />
+                            <div
+                              className="relative z-10 p-4 flex items-center h-full w-full justify-between"
+                              style={{ color: "white" }}
+                            >
+                              <span className="font-bold text-lg text-gray-200">{option}</span>
+                              <span className="text-gray-100 font-semibold">
+                                {percent.toFixed(0)}% - {count}
+                              </span>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+              </ul>
+            </li>
+          ))}
       </ul>
     </div>
   );
