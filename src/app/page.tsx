@@ -385,7 +385,7 @@ const ThankYouPage = ({ onShare }: { onShare: () => void }) => (
          كنشكروك حيث كملتي الاستطلاع
       </h1>
       <p className="text-gray-500 w-[60%] mb-8 md:mb-12  leading-relaxed max-w-4xl mx-auto text-center text-[19px] sm:text-2xl lg:text-2xl 2xl:text-2xl">
-        الخدمة صعيبة دريتها ديا بقات السهلة، باش الاستطلاع يكون مفيد
+        الخدمة صعيبة دريتها دبا بقات ليك السهلة، باش الاستطلاع يكون مفيد
         خاص يشارك فيه أكبر عدد ديال الناس دكشي علاش خصك تعاونّا
         وتبارطاجي الاستطلاع مع صحابك      
       </p>
